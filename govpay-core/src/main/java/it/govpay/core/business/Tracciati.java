@@ -222,7 +222,11 @@ public class Tracciati extends BasicBD {
 
 		switch (operazione.getTipoOperazione()) {
 		case ADD:
-			CaricamentoRequest caricamentoRequest = (CaricamentoRequest) factory.parseLineaOperazioneRequest(TipoTracciatoType.VERSAMENTI, operazione.getDatiRichiesta());
+			AbstractOperazioneRequest abstractOperazioneRequest = factory.parseLineaOperazioneRequest(TipoTracciatoType.VERSAMENTI, operazione.getDatiRichiesta());
+			if(!(abstractOperazioneRequest instanceof CaricamentoRequest))
+				return operazione;
+				
+			CaricamentoRequest caricamentoRequest = (CaricamentoRequest) abstractOperazioneRequest;
 			AbstractOperazioneResponse abstractOperazioneResponse = factory.parseLineaOperazioneResponse(operazione.getTipoOperazione(), operazione.getStato(), operazione.getDatiRisposta());
 			CaricamentoResponse caricamentoResponse = (abstractOperazioneResponse instanceof CaricamentoResponse) ?  (CaricamentoResponse) abstractOperazioneResponse : null;
 
@@ -252,12 +256,20 @@ public class Tracciati extends BasicBD {
 
 			return operazioneCaricamento;
 		case DEL:
-			AnnullamentoRequest annullamentoRequest = (AnnullamentoRequest) factory.parseLineaOperazioneRequest(TipoTracciatoType.VERSAMENTI, operazione.getDatiRichiesta());
+			AbstractOperazioneRequest abstractOperazioneRequest2 = factory.parseLineaOperazioneRequest(TipoTracciatoType.VERSAMENTI, operazione.getDatiRichiesta());
+			if(!(abstractOperazioneRequest2 instanceof AnnullamentoRequest))
+				return operazione;
+			
+			AnnullamentoRequest annullamentoRequest = (AnnullamentoRequest)  abstractOperazioneRequest2; // (AnnullamentoRequest) factory.parseLineaOperazioneRequest(TipoTracciatoType.VERSAMENTI, operazione.getDatiRichiesta());
 			OperazioneAnnullamento operazioneAnnullamento = new OperazioneAnnullamento(operazione);
 			operazioneAnnullamento.setMotivoAnnullamento(annullamentoRequest.getMotivoAnnullamento());
 			return operazioneAnnullamento;
 		case INC: 
-			IncassoRequest incassoRequest = (IncassoRequest) factory.parseLineaOperazioneRequest(TipoTracciatoType.INCASSI, operazione.getDatiRichiesta());
+			AbstractOperazioneRequest abstractOperazioneRequest3 = factory.parseLineaOperazioneRequest(TipoTracciatoType.INCASSI, operazione.getDatiRichiesta());
+			if(!(abstractOperazioneRequest3 instanceof IncassoRequest))
+				return operazione;
+			
+			IncassoRequest incassoRequest = (IncassoRequest) abstractOperazioneRequest3; // factory.parseLineaOperazioneRequest(TipoTracciatoType.INCASSI, operazione.getDatiRichiesta());
 			AbstractOperazioneResponse abstractOperazioneResponse2 = factory.parseLineaOperazioneResponse(operazione.getTipoOperazione(), operazione.getStato(), operazione.getDatiRisposta());
 			IncassoResponse incassoResponse = (abstractOperazioneResponse2 instanceof IncassoResponse) ?  (IncassoResponse) abstractOperazioneResponse2 : null;
 			operazione = inserisciInformazioniRelativeAlTipoOperazione(operazione, incassoRequest, incassoResponse);

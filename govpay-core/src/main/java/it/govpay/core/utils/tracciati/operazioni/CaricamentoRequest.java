@@ -17,11 +17,15 @@ public class CaricamentoRequest extends AbstractOperazioneRequest {
 		this.setCodDominio(Utils.validaESettaRecord(record, "codDominio", 35, null, false));
 		this.setCfDebitore(Utils.validaESettaRecord(record, "cfDebitore", 35, null, false));
 		this.setAnagraficaDebitore(Utils.validaESettaRecord(record, "anagraficaDebitore", 70, null, false));
-		this.setDebitoreIndirizzo(Utils.validaESettaRecord(record, "debitoreIndirizzo", 70, null, false));
-		this.setDebitoreCivico(Utils.validaESettaRecord(record, "debitoreCivico", 16, null, false));
-		this.setDebitoreCap(Utils.validaESettaRecord(record, "debitoreCap", 16, null, false));
-		this.setDebitoreLocalita(Utils.validaESettaRecord(record, "debitoreLocalita", 35, null, false));
-		this.setDebitoreProvincia(Utils.validaESettaRecord(record, "debitoreProvincia", 35, null, false));		
+		try {
+			this.setDebitoreIndirizzo(Utils.validaESettaRecord(record, "debitoreIndirizzo", 70, null, true));
+			this.setDebitoreCivico(Utils.validaESettaRecord(record, "debitoreCivico", 16, null, true));
+			this.setDebitoreCap(Utils.validaESettaRecord(record, "debitoreCap", 16, null, true));
+			this.setDebitoreLocalita(Utils.validaESettaRecord(record, "debitoreLocalita", 35, null, true));
+			this.setDebitoreProvincia(Utils.validaESettaRecord(record, "debitoreProvincia", 35, null, true));		
+		} catch(ValidationException e) {
+			// ignora eccezione per campi non presenti nella v1
+		}
 		this.setCodTributo(Utils.validaESettaRecord(record, "codTributo", 35, null, false));
 		try {
 			this.setImporto(Utils.validaESettaDouble("importo", record.getMap().get("importo"), null, null, false));

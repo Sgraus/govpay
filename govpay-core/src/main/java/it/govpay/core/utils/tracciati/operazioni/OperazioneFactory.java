@@ -40,7 +40,8 @@ public class OperazioneFactory {
 
 	private static Logger logger = LogManager.getLogger(OperazioneFactory.class);
 	private static Format formatW;
-	private static Parser caricamentoParser;
+	private static Parser caricamentoParserV1;
+	private static Parser caricamentoParserV2;
 	private static Parser caricamentoKoResponseParser;
 	private static Parser caricamentoOkResponseParser;
 	private static Parser annullamentoParser;
@@ -55,7 +56,8 @@ public class OperazioneFactory {
 		FormatReader formatReader = new FormatReader(CSVReaderProperties.getInstance(logger).getProperties());
 		formatW = formatReader.getFormat();
 		delimiter = "" + formatW.getCsvFormat().getDelimiter();
-		caricamentoParser = new Parser(OperazioneFactory.class.getResourceAsStream("/caricamento.mapping.properties"), true);
+		caricamentoParserV1 = new Parser(OperazioneFactory.class.getResourceAsStream("/caricamento.mapping.v1.properties"), true);
+		caricamentoParserV2 = new Parser(OperazioneFactory.class.getResourceAsStream("/caricamento.mapping.v2.properties"), true);
 		annullamentoParser = new Parser(OperazioneFactory.class.getResourceAsStream("/annullamento.mapping.properties"), true);
 		incassoParser = new Parser(OperazioneFactory.class.getResourceAsStream("/incasso.mapping.properties"), true);
 		caricamentoOkResponseParser = new Parser(OperazioneFactory.class.getResourceAsStream("/caricamento.response.ok.mapping.properties"), true);
@@ -111,7 +113,7 @@ public class OperazioneFactory {
 		Parser parser = null;
 		if(tipoTracciato.equals(TipoTracciatoType.VERSAMENTI)) {
 			if("ADD".equals(op)) {
-				parser = caricamentoParser;
+				parser = caricamentoParserV2;
 			} else if("DEL".equals(op)) {
 				parser = annullamentoParser;
 			} else {
@@ -129,10 +131,33 @@ public class OperazioneFactory {
  
 
 		ParserResult parserResult = null;
-		try {
-			parserResult = parser.parseCsvFile(formatW, linea);
-		} catch(UtilsException e) {
-			return getOperazioneNonValida(CostantiCaricamento.ERRORE_SINTASSI, "Record non correttamente formato");
+		// tutti i casi tranne add dei versamenti
+		if(!tipoTracciato.equals(TipoTracciatoType.VERSAMENTI) && !"ADD".equals(op)) {
+			try {
+				logger.debug("Esecuzione del parsing di una linea Tipo["+tipoTracciato+"], Op["+op+"] in corso...");
+				parserResult = parser.parseCsvFile(formatW, linea);
+				logger.debug("Esecuzione del parsing di una linea Tipo["+tipoTracciato+"], Op["+op+"] completato con successo.");
+			} catch(UtilsException e) {
+				logger.debug("Esecuzione del parsing di una linea Tipo["+tipoTracciato+"], Op["+op+"] completato con errore: " + e.getMessage());
+				return getOperazioneNonValida(CostantiCaricamento.ERRORE_SINTASSI, "Record non correttamente formato");
+			}		
+		} else { 
+			try {
+				logger.debug("Esecuzione del parsing di una linea Tipo["+tipoTracciato+"], Op["+op+"] con Parser V2 in corso...");
+				parserResult = parser.parseCsvFile(formatW, linea);
+				logger.debug("Esecuzione del parsing di una linea Tipo["+tipoTracciato+"], Op["+op+"] con Parser V2 completato con successo.");
+			} catch(UtilsException e) {
+				logger.debug("Esecuzione del parsing di una linea Tipo["+tipoTracciato+"], Op["+op+"] con Parser V2 completato con errore: " + e.getMessage());
+				try {
+					logger.debug("Esecuzione del parsing di una linea Tipo["+tipoTracciato+"], Op["+op+"] con Parser V1 in corso...");
+					parser = caricamentoParserV1;
+					parserResult = parser.parseCsvFile(formatW, linea);
+					logger.debug("Esecuzione del parsing di una linea Tipo["+tipoTracciato+"], Op["+op+"] con Parser V1 completato con successo.");
+				} catch(UtilsException e2) {
+					logger.debug("Esecuzione del parsing di una linea Tipo["+tipoTracciato+"], Op["+op+"] con Parser V1 completato con errore: " + e.getMessage());
+					return getOperazioneNonValida(CostantiCaricamento.ERRORE_SINTASSI, "Record non correttamente formato");
+				}
+			}
 		}
 
 		if(parserResult.getRecords() == null || parserResult.getRecords().size() == 0)

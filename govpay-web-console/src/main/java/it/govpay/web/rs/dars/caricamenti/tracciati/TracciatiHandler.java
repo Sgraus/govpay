@@ -344,7 +344,7 @@ public class TracciatiHandler extends BaseTracciatiHandler implements IDarsHandl
 					for (int i=findAll.size()-1; i>=0; i--) {
 						Operazione entry = findAll.get(i);
 					
-						if(entry.getTipoOperazione().equals(TipoOperazioneType.ADD)) {
+						if(entry.getTipoOperazione().equals(TipoOperazioneType.ADD) && (entry instanceof OperazioneCaricamento)) {
 							
 							// creo una entry per pdf
 							OperazioneCaricamento opCaricamento = (OperazioneCaricamento) entry;

@@ -343,161 +343,165 @@ public class OperazioniHandler extends DarsHandler<Operazione> implements IDarsH
 				List<it.govpay.web.rs.dars.model.Sezione> datiRisposta = new ArrayList<it.govpay.web.rs.dars.model.Sezione>();
 				boolean addSezioneRisposta = false;
 				if(entry.getTipoOperazione().equals(TipoOperazioneType.ADD)){
-					OperazioneCaricamento opCaricamento = (OperazioneCaricamento) entry;
-
-					long idDominio = -1;
-					if(StringUtils.isNotEmpty(opCaricamento.getCodDominio())){
-						try{
-							Dominio dominio = opCaricamento.getDominio(bd);
-							idDominio = dominio.getId();
-							Domini dominiDars = new Domini();
-							Elemento elemento = ((DominiHandler)dominiDars.getDarsHandler()).getElemento(dominio, dominio.getId(), dominiDars.getPathServizio(), bd);
-							sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".codDominio.label"), elemento.getTitolo());
-						}catch(Exception e){
-							sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".codDominio.label"), opCaricamento.getCodDominio());
+					if(entry instanceof OperazioneCaricamento) {
+						OperazioneCaricamento opCaricamento = (OperazioneCaricamento) entry;
+	
+						long idDominio = -1;
+						if(StringUtils.isNotEmpty(opCaricamento.getCodDominio())){
+							try{
+								Dominio dominio = opCaricamento.getDominio(bd);
+								idDominio = dominio.getId();
+								Domini dominiDars = new Domini();
+								Elemento elemento = ((DominiHandler)dominiDars.getDarsHandler()).getElemento(dominio, dominio.getId(), dominiDars.getPathServizio(), bd);
+								sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".codDominio.label"), elemento.getTitolo());
+							}catch(Exception e){
+								sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".codDominio.label"), opCaricamento.getCodDominio());
+							}
+						}
+						if(StringUtils.isNotEmpty(opCaricamento.getCodTributo())){
+							try{
+								Tributo tributo = opCaricamento.getTributo(operazioniBD, idDominio);
+								Tributi trDars =  new Tributi();
+								Elemento elemento = ((TributiHandler)trDars.getDarsHandler()).getElemento(tributo, tributo.getId(), trDars.getPathServizio(), bd);
+								sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".codTributo.label"), elemento.getTitolo());
+							}catch (Exception e) {
+								sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".codTributo.label"), opCaricamento.getCodTributo());
+							}
+						}
+	
+						if(StringUtils.isNotEmpty(opCaricamento.getCfDebitore()))
+							sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".codiceFiscaleDebitore.label"), opCaricamento.getCfDebitore());
+						if(StringUtils.isNotEmpty(opCaricamento.getAnagraficaDebitore()))
+							sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".anagraficaDebitore.label"), opCaricamento.getAnagraficaDebitore());
+	
+						String indirizzoDebitore = StringUtils.isNotEmpty(opCaricamento.getDebitoreIndirizzo()) ? opCaricamento.getDebitoreIndirizzo() : "";
+						String civicoDebitore = StringUtils.isNotEmpty(opCaricamento.getDebitoreCivico()) ? opCaricamento.getDebitoreCivico() : "";
+						String capDebitore = StringUtils.isNotEmpty(opCaricamento.getDebitoreCap()) ? opCaricamento.getDebitoreCap() : "";
+						String localitaDebitore = StringUtils.isNotEmpty(opCaricamento.getDebitoreLocalita()) ? opCaricamento.getDebitoreLocalita() : "";
+						String provinciaDebitore = StringUtils.isNotEmpty(opCaricamento.getDebitoreProvincia()) ? (" (" +opCaricamento.getDebitoreProvincia() +")" ) : "";
+						String indirizzoCivicoDebitore = indirizzoDebitore + " " + civicoDebitore;
+						String capCittaDebitore = capDebitore + " " + localitaDebitore + provinciaDebitore;
+	
+						if(StringUtils.isNotEmpty(indirizzoCivicoDebitore))
+							sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".debitoreIndirizzo1.label"), indirizzoCivicoDebitore);
+						if(StringUtils.isNotEmpty(capCittaDebitore))
+							sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".debitoreIndirizzo2.label"), capCittaDebitore);
+	
+						if(opCaricamento.getImporto() != null) {
+							sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".importo.label"), this.currencyUtils.getCurrencyAsEuro(opCaricamento.getImporto()));
+						}
+	
+						if(StringUtils.isNotEmpty(opCaricamento.getCausale()))
+							sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".causale.label"), opCaricamento.getCausale());
+						if(opCaricamento.getScadenza() != null) {
+							sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".dataScadenza.label"), this.sdf.format(opCaricamento.getScadenza()));
+						}
+						if(StringUtils.isNotEmpty(opCaricamento.getBundleKey()))
+							sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".bundleKey.label"), opCaricamento.getBundleKey());
+						if(StringUtils.isNotEmpty(opCaricamento.getIdDebito()))
+							sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".identificativoDebito.label"), opCaricamento.getIdDebito());
+						if(StringUtils.isNotEmpty(opCaricamento.getNote()))
+							sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".note.label"), opCaricamento.getNote());
+	
+						it.govpay.web.rs.dars.model.Sezione sezioneDatiRisposta = new it.govpay.web.rs.dars.model.Sezione(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".sezioneDatiRisposta.label"));
+						datiRisposta.add(sezioneDatiRisposta);
+						if(StringUtils.isNotEmpty(opCaricamento.getIuv())){
+							sezioneDatiRisposta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".iuv.label"), opCaricamento.getIuv());
+							addSezioneRisposta = true;
+						}
+						if(opCaricamento.getBarCode()!= null){
+							String barCode = new String(opCaricamento.getBarCode()); 
+							sezioneDatiRisposta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".barCode.label"), barCode);
+							addSezioneRisposta = true;
+						}
+						if(opCaricamento.getQrCode() != null){
+							String qrCode = new String(opCaricamento.getQrCode()); 
+							sezioneDatiRisposta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".qrCode.label"), qrCode);
+							addSezioneRisposta = true;
 						}
 					}
-					if(StringUtils.isNotEmpty(opCaricamento.getCodTributo())){
-						try{
-							Tributo tributo = opCaricamento.getTributo(operazioniBD, idDominio);
-							Tributi trDars =  new Tributi();
-							Elemento elemento = ((TributiHandler)trDars.getDarsHandler()).getElemento(tributo, tributo.getId(), trDars.getPathServizio(), bd);
-							sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".codTributo.label"), elemento.getTitolo());
-						}catch (Exception e) {
-							sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".codTributo.label"), opCaricamento.getCodTributo());
-						}
-					}
-
-					if(StringUtils.isNotEmpty(opCaricamento.getCfDebitore()))
-						sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".codiceFiscaleDebitore.label"), opCaricamento.getCfDebitore());
-					if(StringUtils.isNotEmpty(opCaricamento.getAnagraficaDebitore()))
-						sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".anagraficaDebitore.label"), opCaricamento.getAnagraficaDebitore());
-
-					String indirizzoDebitore = StringUtils.isNotEmpty(opCaricamento.getDebitoreIndirizzo()) ? opCaricamento.getDebitoreIndirizzo() : "";
-					String civicoDebitore = StringUtils.isNotEmpty(opCaricamento.getDebitoreCivico()) ? opCaricamento.getDebitoreCivico() : "";
-					String capDebitore = StringUtils.isNotEmpty(opCaricamento.getDebitoreCap()) ? opCaricamento.getDebitoreCap() : "";
-					String localitaDebitore = StringUtils.isNotEmpty(opCaricamento.getDebitoreLocalita()) ? opCaricamento.getDebitoreLocalita() : "";
-					String provinciaDebitore = StringUtils.isNotEmpty(opCaricamento.getDebitoreProvincia()) ? (" (" +opCaricamento.getDebitoreProvincia() +")" ) : "";
-					String indirizzoCivicoDebitore = indirizzoDebitore + " " + civicoDebitore;
-					String capCittaDebitore = capDebitore + " " + localitaDebitore + provinciaDebitore;
-
-					if(StringUtils.isNotEmpty(indirizzoCivicoDebitore))
-						sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".debitoreIndirizzo1.label"), indirizzoCivicoDebitore);
-					if(StringUtils.isNotEmpty(capCittaDebitore))
-						sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".debitoreIndirizzo2.label"), capCittaDebitore);
-
-					if(opCaricamento.getImporto() != null) {
-						sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".importo.label"), this.currencyUtils.getCurrencyAsEuro(opCaricamento.getImporto()));
-					}
-
-					if(StringUtils.isNotEmpty(opCaricamento.getCausale()))
-						sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".causale.label"), opCaricamento.getCausale());
-					if(opCaricamento.getScadenza() != null) {
-						sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".dataScadenza.label"), this.sdf.format(opCaricamento.getScadenza()));
-					}
-					if(StringUtils.isNotEmpty(opCaricamento.getBundleKey()))
-						sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".bundleKey.label"), opCaricamento.getBundleKey());
-					if(StringUtils.isNotEmpty(opCaricamento.getIdDebito()))
-						sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".identificativoDebito.label"), opCaricamento.getIdDebito());
-					if(StringUtils.isNotEmpty(opCaricamento.getNote()))
-						sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".note.label"), opCaricamento.getNote());
-
-					it.govpay.web.rs.dars.model.Sezione sezioneDatiRisposta = new it.govpay.web.rs.dars.model.Sezione(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".sezioneDatiRisposta.label"));
-					datiRisposta.add(sezioneDatiRisposta);
-					if(StringUtils.isNotEmpty(opCaricamento.getIuv())){
-						sezioneDatiRisposta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".iuv.label"), opCaricamento.getIuv());
-						addSezioneRisposta = true;
-					}
-					if(opCaricamento.getBarCode()!= null){
-						String barCode = new String(opCaricamento.getBarCode()); 
-						sezioneDatiRisposta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".barCode.label"), barCode);
-						addSezioneRisposta = true;
-					}
-					if(opCaricamento.getQrCode() != null){
-						String qrCode = new String(opCaricamento.getQrCode()); 
-						sezioneDatiRisposta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".qrCode.label"), qrCode);
-						addSezioneRisposta = true;
-					}
-
 
 				} else if(entry.getTipoOperazione().equals(TipoOperazioneType.DEL)){
-					OperazioneAnnullamento opAnnullamento = (OperazioneAnnullamento) entry;
-
-					if(StringUtils.isNotEmpty(opAnnullamento.getMotivoAnnullamento()))
-						sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".motivoAnnullamento.label"), opAnnullamento.getMotivoAnnullamento());
+					if(entry instanceof OperazioneAnnullamento) {
+						OperazioneAnnullamento opAnnullamento = (OperazioneAnnullamento) entry;
+	
+						if(StringUtils.isNotEmpty(opAnnullamento.getMotivoAnnullamento()))
+							sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".motivoAnnullamento.label"), opAnnullamento.getMotivoAnnullamento());
+					}
 				} else if(entry.getTipoOperazione().equals(TipoOperazioneType.INC)){
-					OperazioneIncasso opIncasso = (OperazioneIncasso) entry;
-
-					if(StringUtils.isNotEmpty(opIncasso.getCodDominio())){
-						try{
-							Dominio dominio = opIncasso.getDominio(bd);
-							Domini dominiDars = new Domini();
-							Elemento elemento = ((DominiHandler)dominiDars.getDarsHandler()).getElemento(dominio, dominio.getId(), dominiDars.getPathServizio(), bd);
-							sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".codDominio.label"), elemento.getTitolo());
-						}catch(Exception e){
-							sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".codDominio.label"), opIncasso.getCodDominio());
+					if(entry instanceof OperazioneIncasso) {
+						OperazioneIncasso opIncasso = (OperazioneIncasso) entry;
+	
+						if(StringUtils.isNotEmpty(opIncasso.getCodDominio())){
+							try{
+								Dominio dominio = opIncasso.getDominio(bd);
+								Domini dominiDars = new Domini();
+								Elemento elemento = ((DominiHandler)dominiDars.getDarsHandler()).getElemento(dominio, dominio.getId(), dominiDars.getPathServizio(), bd);
+								sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".codDominio.label"), elemento.getTitolo());
+							}catch(Exception e){
+								sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".codDominio.label"), opIncasso.getCodDominio());
+							}
 						}
-					}
-
-					if(StringUtils.isNotEmpty(opIncasso.getDispositivo()))
-						sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".dispositivo.label"), opIncasso.getDispositivo());
-					if(StringUtils.isNotEmpty(opIncasso.getTrn()))
-						sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".trn.label"), opIncasso.getTrn());
-					if(StringUtils.isNotEmpty(opIncasso.getCausale()))
-						sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".causale.label"), opIncasso.getCausale());
-					if(opIncasso.getImporto() != null) {
-						sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".importo.label"), this.currencyUtils.getCurrencyAsEuro(opIncasso.getImporto()));
-					}
-					if(opIncasso.getDataContabile() != null) {
-						sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".dataContabile.label"), this.sdf.format(opIncasso.getDataContabile()));
-					}
-					if(opIncasso.getDataValuta() != null) {
-						sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".dataValuta.label"), this.sdf.format(opIncasso.getDataValuta()));
-					}
-
-					if(StringUtils.isNotEmpty(opIncasso.getFaultCode()) || StringUtils.isNotEmpty(opIncasso.getFaultDescription())
-									|| StringUtils.isNotEmpty(opIncasso.getFaultString())) {
-						addSezioneRisposta = true;
-						it.govpay.web.rs.dars.model.Sezione sezioneDatiRisposta = 
-								new it.govpay.web.rs.dars.model.Sezione(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".sezioneDatiRisposta.label"));
-
-						if(StringUtils.isNotEmpty(opIncasso.getFaultCode()))
-							sezioneDatiRisposta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".faultCode.label"), opIncasso.getFaultCode());
-						if(StringUtils.isNotEmpty(opIncasso.getFaultString()))
-							sezioneDatiRisposta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".faultString.label"), opIncasso.getFaultString());
-						if(StringUtils.isNotEmpty(opIncasso.getFaultDescription()))
-							sezioneDatiRisposta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".faultDescription.label"), opIncasso.getFaultDescription());
-
-						datiRisposta.add(sezioneDatiRisposta);
-					}
-
-
-					if(opIncasso.getListaSingoloIncasso() != null && opIncasso.getListaSingoloIncasso().size() > 0) {
-						addSezioneRisposta = true;
-						for (SingoloIncasso singoloIncasso : opIncasso.getListaSingoloIncasso()) {
+	
+						if(StringUtils.isNotEmpty(opIncasso.getDispositivo()))
+							sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".dispositivo.label"), opIncasso.getDispositivo());
+						if(StringUtils.isNotEmpty(opIncasso.getTrn()))
+							sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".trn.label"), opIncasso.getTrn());
+						if(StringUtils.isNotEmpty(opIncasso.getCausale()))
+							sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".causale.label"), opIncasso.getCausale());
+						if(opIncasso.getImporto() != null) {
+							sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".importo.label"), this.currencyUtils.getCurrencyAsEuro(opIncasso.getImporto()));
+						}
+						if(opIncasso.getDataContabile() != null) {
+							sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".dataContabile.label"), this.sdf.format(opIncasso.getDataContabile()));
+						}
+						if(opIncasso.getDataValuta() != null) {
+							sezioneDatiRichiesta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".dataValuta.label"), this.sdf.format(opIncasso.getDataValuta()));
+						}
+	
+						if(StringUtils.isNotEmpty(opIncasso.getFaultCode()) || StringUtils.isNotEmpty(opIncasso.getFaultDescription())
+										|| StringUtils.isNotEmpty(opIncasso.getFaultString())) {
+							addSezioneRisposta = true;
 							it.govpay.web.rs.dars.model.Sezione sezioneDatiRisposta = 
-									new it.govpay.web.rs.dars.model.Sezione(Utils.getInstance(this.getLanguage()).getMessageWithParamsFromResourceBundle(this.nomeServizio + ".sezioneDatiRispostaSingoloIncasso.label",
-											singoloIncasso.getTrn()));
-
-							if(StringUtils.isNotEmpty(singoloIncasso.getCodVersamentoEnte()))
-								sezioneDatiRisposta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".codVersamentoEnte.label"), singoloIncasso.getCodVersamentoEnte());
-							if(StringUtils.isNotEmpty(singoloIncasso.getCodSingoloVersamentoEnte()))
-								sezioneDatiRisposta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".codSingoloVersamentoEnte.label"), singoloIncasso.getCodSingoloVersamentoEnte());
-							if(StringUtils.isNotEmpty(singoloIncasso.getIuv()))
-								sezioneDatiRisposta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".iuv.label"), singoloIncasso.getIuv());
-							if(StringUtils.isNotEmpty(singoloIncasso.getIur()))
-								sezioneDatiRisposta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".iur.label"), singoloIncasso.getIur());
-							if(singoloIncasso.getDataPagamento() != null) {
-								sezioneDatiRisposta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".dataPagamento.label"), this.sdf.format(singoloIncasso.getDataPagamento()));
-							}
-							if(singoloIncasso.getImporto() != null) {
-								sezioneDatiRisposta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".importo.label"), this.currencyUtils.getCurrencyAsEuro(singoloIncasso.getImporto()));
-							}
-
+									new it.govpay.web.rs.dars.model.Sezione(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".sezioneDatiRisposta.label"));
+	
+							if(StringUtils.isNotEmpty(opIncasso.getFaultCode()))
+								sezioneDatiRisposta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".faultCode.label"), opIncasso.getFaultCode());
+							if(StringUtils.isNotEmpty(opIncasso.getFaultString()))
+								sezioneDatiRisposta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".faultString.label"), opIncasso.getFaultString());
+							if(StringUtils.isNotEmpty(opIncasso.getFaultDescription()))
+								sezioneDatiRisposta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".faultDescription.label"), opIncasso.getFaultDescription());
+	
 							datiRisposta.add(sezioneDatiRisposta);
 						}
+	
+	
+						if(opIncasso.getListaSingoloIncasso() != null && opIncasso.getListaSingoloIncasso().size() > 0) {
+							addSezioneRisposta = true;
+							for (SingoloIncasso singoloIncasso : opIncasso.getListaSingoloIncasso()) {
+								it.govpay.web.rs.dars.model.Sezione sezioneDatiRisposta = 
+										new it.govpay.web.rs.dars.model.Sezione(Utils.getInstance(this.getLanguage()).getMessageWithParamsFromResourceBundle(this.nomeServizio + ".sezioneDatiRispostaSingoloIncasso.label",
+												singoloIncasso.getTrn()));
+	
+								if(StringUtils.isNotEmpty(singoloIncasso.getCodVersamentoEnte()))
+									sezioneDatiRisposta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".codVersamentoEnte.label"), singoloIncasso.getCodVersamentoEnte());
+								if(StringUtils.isNotEmpty(singoloIncasso.getCodSingoloVersamentoEnte()))
+									sezioneDatiRisposta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".codSingoloVersamentoEnte.label"), singoloIncasso.getCodSingoloVersamentoEnte());
+								if(StringUtils.isNotEmpty(singoloIncasso.getIuv()))
+									sezioneDatiRisposta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".iuv.label"), singoloIncasso.getIuv());
+								if(StringUtils.isNotEmpty(singoloIncasso.getIur()))
+									sezioneDatiRisposta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".iur.label"), singoloIncasso.getIur());
+								if(singoloIncasso.getDataPagamento() != null) {
+									sezioneDatiRisposta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".dataPagamento.label"), this.sdf.format(singoloIncasso.getDataPagamento()));
+								}
+								if(singoloIncasso.getImporto() != null) {
+									sezioneDatiRisposta.addVoce(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(this.nomeServizio + ".importo.label"), this.currencyUtils.getCurrencyAsEuro(singoloIncasso.getImporto()));
+								}
+	
+								datiRisposta.add(sezioneDatiRisposta);
+							}
+						}
 					}
-
 				} else {
 					// non valido non ha dati
 				}
