@@ -36633,8 +36633,12 @@ Polymer.AppLocalizeBehavior = {
       },
 
       _onTapAdvSearch: function(){
-        var _lsv = this.querySelector('link-search-view');
-        _lsv.toggleAdvancedSearch(!_lsv.advSearch);
+        var _lsv = this.querySelectorAll('link-search-view');
+        _lsv.forEach(function(view) {
+          if(!view._showAdvancedSearch(view.numResults, view.obj)) {
+            view.toggleAdvancedSearch(!view.advSearch);
+          }
+        });
       },
 
       classeValore: function(voce){
@@ -40989,6 +40993,10 @@ return a.defineLocale("ur",{months:xb,monthsShort:xb,weekdays:yb,weekdaysShort:y
             type: Object,
             value: null
           },
+          _viewChanged: {
+            type: Boolean,
+            value: false
+          },
           _hideDatepicker: {
             type: Boolean
           },
@@ -41052,6 +41060,11 @@ return a.defineLocale("ur",{months:xb,monthsShort:xb,weekdays:yb,weekdaysShort:y
           return _cols;
         },
 
+        search: function() {
+	  var _link = this.querySelector('paper-tab.link-chart-tab-selected').dataArg;
+          this.requestChartInfo(_link);
+        },
+
         requestChartInfo: function(_uri, _forwardNavigation){
           if (_uri != '') {
             this._baseURL = REST_URL + _uri + app.appendLangParameter(_uri);
@@ -41109,6 +41122,7 @@ return a.defineLocale("ur",{months:xb,monthsShort:xb,weekdays:yb,weekdaysShort:y
             var _grafico;
             switch(_response.grafico.tipo.toLowerCase()) {
               case 'bar':
+              case 'line':
                 _grafico = this._configBarChart(_response);
                 if(_grafico) {
                   var _newData = { valori: [], tips: [], x: [], subtitle: _grafico.chartSubtitle };
@@ -41189,7 +41203,10 @@ return a.defineLocale("ur",{months:xb,monthsShort:xb,weekdays:yb,weekdaysShort:y
         },
 
         setResponse: function(_response){
-          this.buildForm(_response.infoRicerca, this.$.filterForm);
+          if(this._viewChanged || (this.$.filterForm && this.$.filterForm.children.length == 0)) {
+            this._viewChanged = false;
+            this.buildForm(_response.infoRicerca, this.$.filterForm);
+          }
 
           this._hideChart = false;
           this._hideDatepicker = !_response.attivaDate;
@@ -41220,6 +41237,7 @@ return a.defineLocale("ur",{months:xb,monthsShort:xb,weekdays:yb,weekdaysShort:y
 
           switch(_response.grafico.tipo.toLowerCase()) {
             case 'bar':
+            case 'line':
               _grafico = this._configBarChart(_response);
               break;
             case 'pie':
@@ -41257,6 +41275,12 @@ return a.defineLocale("ur",{months:xb,monthsShort:xb,weekdays:yb,weekdaysShort:y
             item.label = _data.grafico.categorie[i];
             item.backgroundColor = (_barConfig.coloriAutomatici)?this.colorSerie(i, true):_data.grafico.colori[i];
             item.borderColor = (_barConfig.coloriAutomatici)?this.colorSerie(i, true):_data.grafico.colori[i];
+            if(_barConfig.type == 'line') {
+              item.fill = false;
+              item.pointHoverBackgroundColor = item.borderColor;
+              item.pointBackgroundColor = item.borderColor;
+              item.lineTension = 0;
+            }
           }
           this._nodata = false;
 
@@ -41290,6 +41314,7 @@ return a.defineLocale("ur",{months:xb,monthsShort:xb,weekdays:yb,weekdaysShort:y
           this.data = {};
           switch (_configData.type) {
             case 'bar':
+            case 'line':
                 this._configBarOptions(_configData);
               break;
             case 'pie':
@@ -41412,27 +41437,43 @@ return a.defineLocale("ur",{months:xb,monthsShort:xb,weekdays:yb,weekdaysShort:y
             if(_got.length != 0) {
               var _now = new Date();
               this.serviceParameters.levelUp = { data: this.serviceParameters.data, index: _el._index };
+              (this.serviceParameters.tipoIntervallo == 'M')?this.serviceParameters.levelUp.index = -1:null;
+              var _intervalli = [];
+              if(this._datepickerConfig && this._datepickerConfig.values) {
+                _intervalli = this._datepickerConfig.values.map(function(item){
+                  return item.valore;
+                });
+              }
+              var _canNavigate = false;
               switch(this.serviceParameters.tipoIntervallo){
                 case 'd':
-                  _m = moment(_lbl, _dateFormats[this.serviceParameters.tipoIntervallo]);
-                  _m.set('hour', _now.getHours());
-                  _m.set('minute', _now.getMinutes());
-                  this.serviceParameters.tipoIntervallo = 'h';
-                  _nmd = moment(_m);
-                  this.serviceParameters.data = _nmd.format('YYYY-MM-DDTHH:mm:ss');
+                  if(_intervalli.indexOf('h') != -1) {
+                    _canNavigate = true;
+                    _m = moment(_lbl, _dateFormats[this.serviceParameters.tipoIntervallo]);
+                    _m.set('hour', _now.getHours());
+                    _m.set('minute', _now.getMinutes());
+                    this.serviceParameters.tipoIntervallo = 'h';
+                    _nmd = moment(_m);
+                    this.serviceParameters.data = _nmd.format('YYYY-MM-DDTHH:mm:ss');
+                  }
                   break;
                 case 'M':
-                  _m = moment(_lbl, _dateFormats[this.serviceParameters.tipoIntervallo]);
-                  _m.set('date', this._calcColumns());
-                  _nmd = moment(_m);
-                  this.serviceParameters.tipoIntervallo = 'd';
-                  this.serviceParameters.data = _nmd.format('YYYY-MM-DD');
+                  if(_intervalli.indexOf('d') != -1) {
+                    _canNavigate = true;
+                    _m = moment(_lbl, _dateFormats[this.serviceParameters.tipoIntervallo]);
+                    _m.set('date', this._calcColumns());
+                    _nmd = moment(_m);
+                    this.serviceParameters.tipoIntervallo = 'd';
+                    this.serviceParameters.data = _nmd.format('YYYY-MM-DD');
+                  }
                   break;
               }
 
-              var _link = this.querySelector('paper-tab.link-chart-tab-selected').dataArg;
-              if(_link) {
-                this.requestChartInfo(_link);
+              if(_canNavigate) {
+                var _link = this.querySelector('paper-tab.link-chart-tab-selected').dataArg;
+                if(_link) {
+                  this.requestChartInfo(_link);
+                }
               }
             } else {
               console.log('Formato data non trovato');
@@ -41592,10 +41633,10 @@ return a.defineLocale("ur",{months:xb,monthsShort:xb,weekdays:yb,weekdaysShort:y
 
         switchView: function(e) {
           if(this.svgChart) {
+            this._viewChanged = true;
             this.serviceParameters = null;
             this.requestChartInfo(e.detail.item.dataArg);
           }
-
         },
 
         _toggleFilter: function(){

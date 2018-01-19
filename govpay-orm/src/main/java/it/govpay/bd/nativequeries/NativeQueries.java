@@ -5,6 +5,7 @@ import java.util.Date;
 import org.openspcoop2.generic_project.exception.ServiceException;
 
 import it.govpay.bd.GovpayConfig;
+import it.govpay.bd.reportistica.statistiche.filters.PagamentiFilter;
 import it.govpay.bd.reportistica.statistiche.filters.TransazioniFilter;
 import it.govpay.model.reportistica.statistiche.TipoIntervallo;
 
@@ -27,6 +28,13 @@ public abstract class NativeQueries {
 	
 	public abstract String getStatisticheTransazioniPerPspQuery(TipoIntervallo tipoIntervallo, Date data, TransazioniFilter filtro);
 	public abstract Object[] getStatisticheTransazioniPerPspValues(TipoIntervallo tipoIntervallo, Date data, TransazioniFilter filtro);
+	
+	public abstract String getStatistichePagamentiPerPspQuery(TipoIntervallo tipoIntervallo, Date data, PagamentiFilter filtro);
+	public abstract Object[] getStatistichePagamentiPerPspValues(TipoIntervallo tipoIntervallo, Date data, PagamentiFilter filtro);
+	
+	public abstract String getStatistichePagamentiAndamentoTemporaleQuery(TipoIntervallo tipoIntervallo, Date data, int limit, PagamentiFilter filtro);
+	public abstract Object[] getStatistichePagamentiAndamentoTemporaleValues(TipoIntervallo tipoIntervallo, Date data, int limit, PagamentiFilter filtro);
+
 	
 	public static NativeQueries getInstance() throws ServiceException {
 		

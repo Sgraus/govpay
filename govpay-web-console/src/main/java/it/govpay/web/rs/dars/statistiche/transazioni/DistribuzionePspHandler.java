@@ -67,12 +67,15 @@ import it.govpay.web.utils.Utils;
 public class DistribuzionePspHandler extends StatisticaDarsHandler<DistribuzionePsp> implements IStatisticaDarsHandler<DistribuzionePsp>{
 
 	public static final String ANAGRAFICA_DEBITORE = "anagrafica";
-	private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");  
-	private SimpleDateFormat sdfGiorno = new SimpleDateFormat("dd/MM/yyyy");
-	private SimpleDateFormat sdfMese = new SimpleDateFormat("MMMMM");  
+	private SimpleDateFormat sdf = null;
+	private SimpleDateFormat sdfGiorno =null;
+	private SimpleDateFormat sdfMese = null;  
 
 	public DistribuzionePspHandler(Logger log, BaseDarsService darsService) { 
 		super(log, darsService);
+		this.sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm", this.getLanguage());  
+		this.sdfGiorno = new SimpleDateFormat("dd/MM/yyyy", this.getLanguage());
+		this.sdfMese = new SimpleDateFormat("MMMMM yyyy", this.getLanguage());  
 	}
 
 
@@ -108,7 +111,7 @@ public class DistribuzionePspHandler extends StatisticaDarsHandler<Distribuzione
 				break;
 			}
 //			Date start = calendar.getTime();
-			String sottoTitolo = Utils.getInstance(this.getLanguage()).getMessageWithParamsFromResourceBundle(this.nomeServizio + ".label.sottotitolo",_sdf.format(filter.getData()));
+			String sottoTitolo = Utils.getInstance(this.getLanguage()).getMessageWithParamsFromResourceBundle(this.nomeServizio + ".label.sottotitolo."+filter.getTipoIntervallo(),_sdf.format(filter.getData()));
 
 
 			// visualizza la ricerca solo se i risultati sono > del limit
@@ -118,19 +121,19 @@ public class DistribuzionePspHandler extends StatisticaDarsHandler<Distribuzione
 			// valorizzo i valori da restitire al client
 			infoGrafico = this.valorizzaInfoGrafico(uriInfo, bd, filter, infoGrafico);
 
-			//List<DistribuzionePsp> distribuzioneEsiti = transazioniBD.getDistribuzionePsp(filter);
+			List<DistribuzionePsp> distribuzioneEsiti = transazioniBD.getDistribuzionePsp(filter);
 			
-			List<DistribuzionePsp> distribuzioneEsiti = new ArrayList<DistribuzionePsp>();
-			DistribuzionePsp d = new DistribuzionePsp("Unicredit SPA", 7420);
-			distribuzioneEsiti.add(d);
-			DistribuzionePsp d2 = new DistribuzionePsp("Poste Italiane", 3158);
-			distribuzioneEsiti.add(d2);
-			DistribuzionePsp d3 = new DistribuzionePsp("UBI Banca SPA", 4801);
-			distribuzioneEsiti.add(d3);
-			DistribuzionePsp d4 = new DistribuzionePsp("Paytipper SPA", 1790);
-			distribuzioneEsiti.add(d4);
-			DistribuzionePsp daltri = new DistribuzionePsp("Altri", 1126);
-			distribuzioneEsiti.add(daltri);
+//			List<DistribuzionePsp> distribuzioneEsiti = new ArrayList<DistribuzionePsp>();
+//			DistribuzionePsp d = new DistribuzionePsp("Unicredit SPA", 7420);
+//			distribuzioneEsiti.add(d);
+//			DistribuzionePsp d2 = new DistribuzionePsp("Poste Italiane", 3158);
+//			distribuzioneEsiti.add(d2);
+//			DistribuzionePsp d3 = new DistribuzionePsp("UBI Banca SPA", 4801);
+//			distribuzioneEsiti.add(d3);
+//			DistribuzionePsp d4 = new DistribuzionePsp("Paytipper SPA", 1790);
+//			distribuzioneEsiti.add(d4);
+//			DistribuzionePsp daltri = new DistribuzionePsp("Altri", 1126);
+//			distribuzioneEsiti.add(daltri);
 
 			this.log.info("Esecuzione " + methodName + " completata.");
 
@@ -146,7 +149,7 @@ public class DistribuzionePspHandler extends StatisticaDarsHandler<Distribuzione
 				Serie<Long> serie1 = new Serie<Long>();
 				for (DistribuzionePsp elemento : distribuzioneEsiti) {
 					String dataPsp = elemento.getPsp();
-					long transazioni = elemento.getTransazioni();
+					long transazioni = elemento.getNumero();
 
 					grafico.getCategorie().add(Utils.getInstance(this.getLanguage()).getMessageWithParamsFromResourceBundle(this.nomeServizio + ".psp.label", dataPsp));
 					//					grafico.getValoriX().add(dataElemento);

@@ -11,35 +11,32 @@ import org.openspcoop2.generic_project.exception.ServiceException;
 
 import it.govpay.bd.BasicBD;
 import it.govpay.bd.nativequeries.NativeQueries;
-import it.govpay.bd.reportistica.statistiche.filters.TransazioniFilter;
-import it.govpay.model.reportistica.statistiche.DistribuzioneEsiti;
+import it.govpay.bd.reportistica.statistiche.filters.PagamentiFilter;
+import it.govpay.model.reportistica.statistiche.AndamentoTemporale;
 import it.govpay.model.reportistica.statistiche.DistribuzionePsp;
 import it.govpay.orm.dao.jdbc.JDBCServiceManager;
 
-public class TransazioniBD extends BasicBD {
+public class PagamentiBD extends BasicBD {
 
-	
-	public TransazioniBD(BasicBD basicBD) {
+	public PagamentiBD(BasicBD basicBD) {
 		super(basicBD);
 	}
 	
-	public TransazioniFilter newFilter() throws ServiceException {
-		return new TransazioniFilter(this.getRptService());
+	public PagamentiFilter newFilter() throws ServiceException {
+		return new PagamentiFilter(this.getPagamentoService());
 	}
-
-	public List<DistribuzioneEsiti> getDistribuzioneEsiti(TransazioniFilter filtro) throws ServiceException {
+	
+	public List<AndamentoTemporale> getAndamentoTemporale(PagamentiFilter filtro) throws ServiceException {
 		try {
 			List<Class<?>> lstReturnType = new ArrayList<Class<?>>();
 
 			lstReturnType.add(Date.class);
 			lstReturnType.add(Long.class);
-			lstReturnType.add(Long.class);
-			lstReturnType.add(Long.class);
 
-			String nativeQueryString = NativeQueries.getInstance().getStatisticheTransazioniPerEsitoQuery(filtro.getTipoIntervallo(), filtro.getData(), filtro.getLimit(), filtro);
+			String nativeQueryString = NativeQueries.getInstance().getStatistichePagamentiAndamentoTemporaleQuery(filtro.getTipoIntervallo(), filtro.getData(), filtro.getLimit(), filtro);
 			Logger.getLogger(JDBCServiceManager.class).debug(nativeQueryString);
 
-			Object[] array = NativeQueries.getInstance().getStatisticheTransazioniPerEsitoValues(filtro.getTipoIntervallo(), filtro.getData(), filtro.getLimit(), filtro);
+			Object[] array = NativeQueries.getInstance().getStatistichePagamentiAndamentoTemporaleValues(filtro.getTipoIntervallo(), filtro.getData(), filtro.getLimit(), filtro);
 			Logger.getLogger(JDBCServiceManager.class).debug("Params: ");
 			for(Object obj: array) {
 				Logger.getLogger(JDBCServiceManager.class).debug(obj);
@@ -47,30 +44,31 @@ public class TransazioniBD extends BasicBD {
 
 			List<List<Object>> lstRecords = this.getRptService().nativeQuery(nativeQueryString, lstReturnType, array);
 
-			List<DistribuzioneEsiti> distribuzioni = new ArrayList<DistribuzioneEsiti>();
+			List<AndamentoTemporale> distribuzioni = new ArrayList<AndamentoTemporale>();
 
 			for(List<Object> record: lstRecords) {
-				distribuzioni.add(new DistribuzioneEsiti((Date) record.get(0), (Long) record.get(1), (Long) record.get(2), (Long) record.get(3)));
+				distribuzioni.add(new AndamentoTemporale((Date) record.get(0), (Long) record.get(1)));
 			}
 			return distribuzioni;
 		} catch (NotImplementedException e) {
 			throw new ServiceException(e);
 		} catch (NotFoundException e) {
-			return new ArrayList<DistribuzioneEsiti>();
+			return new ArrayList<AndamentoTemporale>();
 		}
 	}
 	
-	public List<DistribuzionePsp> getDistribuzionePsp(TransazioniFilter filtro) throws ServiceException {
+	
+	public List<DistribuzionePsp> getDistribuzionePsp(PagamentiFilter filtro) throws ServiceException {
 		try {
 			List<Class<?>> lstReturnType = new ArrayList<Class<?>>();
 
 			lstReturnType.add(String.class);
 			lstReturnType.add(Long.class);
 
-			String nativeQueryString = NativeQueries.getInstance().getStatisticheTransazioniPerPspQuery(filtro.getTipoIntervallo(), filtro.getData(), filtro);
+			String nativeQueryString = NativeQueries.getInstance().getStatistichePagamentiPerPspQuery(filtro.getTipoIntervallo(), filtro.getData(), filtro);
 			Logger.getLogger(JDBCServiceManager.class).debug(nativeQueryString);
 
-			Object[] array = NativeQueries.getInstance().getStatisticheTransazioniPerPspValues(filtro.getTipoIntervallo(), filtro.getData(), filtro);
+			Object[] array = NativeQueries.getInstance().getStatistichePagamentiPerPspValues(filtro.getTipoIntervallo(), filtro.getData(), filtro);
 			Logger.getLogger(JDBCServiceManager.class).debug("Params: ");
 			for(Object obj: array) {
 				Logger.getLogger(JDBCServiceManager.class).debug(obj);

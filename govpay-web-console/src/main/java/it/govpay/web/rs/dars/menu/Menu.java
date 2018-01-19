@@ -61,6 +61,7 @@ import it.govpay.web.rs.dars.monitoraggio.pagamenti.Pagamenti;
 import it.govpay.web.rs.dars.monitoraggio.rendicontazioni.Fr;
 import it.govpay.web.rs.dars.monitoraggio.versamenti.Transazioni;
 import it.govpay.web.rs.dars.monitoraggio.versamenti.Versamenti;
+import it.govpay.web.rs.dars.statistiche.pagamenti.AndamentoTemporale;
 import it.govpay.web.rs.dars.statistiche.transazioni.DistribuzioneEsiti;
 import it.govpay.web.utils.ConsoleProperties;
 import it.govpay.web.utils.Utils;
@@ -214,6 +215,11 @@ public class Menu extends BaseRsService {
 				URI statTransazioniURI = new URI(statTransazioniDars.getPathServizio());
 				VoceMenu voceMenuStatTransazioni = new VoceMenu(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(statTransazioniDars.getNomeServizio() + ".titolo"),	statTransazioniURI, VoceMenu.VOCE_STATISTICA);
 				vociMenuStatistiche.add(voceMenuStatTransazioni);
+				
+				AndamentoTemporale statPagamentiDars = new AndamentoTemporale();
+				URI statPagamentiURI = new URI(statPagamentiDars.getPathServizio());
+				VoceMenu voceMenuStatPagamenti = new VoceMenu(Utils.getInstance(this.getLanguage()).getMessageFromResourceBundle(statPagamentiDars.getNomeServizio() + ".titolo"),	statPagamentiURI, VoceMenu.VOCE_STATISTICA);
+				vociMenuStatistiche.add(voceMenuStatPagamenti);
 			}
 
 			// Preparazione voci menu' Manutenzione

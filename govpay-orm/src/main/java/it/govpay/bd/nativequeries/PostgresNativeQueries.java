@@ -5,6 +5,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import it.govpay.bd.reportistica.statistiche.filters.PagamentiFilter;
 import it.govpay.bd.reportistica.statistiche.filters.TransazioniFilter;
 import it.govpay.model.reportistica.statistiche.TipoIntervallo;
 
@@ -139,17 +140,17 @@ public class PostgresNativeQueries extends NativeQueries {
 				+ " SUM(CASE WHEN stato not in ('RPT_ERRORE_INVIO_A_NODO','RPT_RIFIUTATA_NODO','RPT_RIFIUTATA_PSP','RPT_ERRORE_INVIO_A_PSP','RT_RIFIUTATA_NODO','RT_RIFIUTATA_PA','RT_ESITO_SCONOSCIUTO_PA','INTERNO_NODO','RT_ACCETTATA_PA') THEN 1 ELSE 0 END) as in_corso "
 				+ " from rpt right join (SELECT data FROM generate_series(?::timestamp, ?::timestamp, ?::interval) as data) elencodate on date_trunc(?, rpt.data_msg_richiesta) = date_trunc(?, elencodate.data) ";
 		
-		boolean where = false;
+//		boolean where = false;
 		if(filtro.getCodDominio() != null) {
-			sql += " WHERE cod_dominio = ? ";
-			where = true;
+			sql += " AND cod_dominio = ? ";
+//			where = true;
 		}
 		
 		if(filtro.getCodPsp() != null) {
-			if(where)
+//			if(where)
 				sql += " AND cod_psp = ? ";
-			else
-				sql += " WHERE cod_psp = ? ";
+//			else
+//				sql += " WHERE cod_psp = ? ";
 		}
 		
 		sql += " group by data order by data asc limit ?";
@@ -238,5 +239,149 @@ public class PostgresNativeQueries extends NativeQueries {
 		
 		return valori.toArray(new Object[]{});
 	}
+	
+	@Override
+	public Object[] getStatistichePagamentiPerPspValues(TipoIntervallo tipoIntervallo, Date data, PagamentiFilter filtro) {
+		
+		String date_trunc = "";
+		switch (tipoIntervallo) {
+		case MENSILE:
+			date_trunc = "month";
+			break;
+		case GIORNALIERO:
+			date_trunc = "day";
+			break;
+		case ORARIO:
+			date_trunc = "hour";
+			break;
+		}	
+		
+		List<Object> valori = new ArrayList<Object>();
+		
+		if(filtro.getCodTributo() != null) valori.add(filtro.getCodTributo());
+		if(filtro.getCodUo() != null) valori.add(filtro.getCodUo());
+		
+		valori.add(date_trunc);
+		valori.add(date_trunc);
+		valori.add(data);
+		
+		if(filtro.getCodDominio() != null) valori.add(filtro.getCodDominio());
+		
+		return valori.toArray(new Object[]{});
+	}
 
+	@Override
+	public String getStatistichePagamentiPerPspQuery(TipoIntervallo tipoIntervallo, Date data, PagamentiFilter filtro) {
+		String placeHolderTributo = " ";
+		String placeHolderUo = " ";
+		boolean addSV = false;
+		
+		if(filtro.getCodTributo() != null) {
+			addSV = true;
+			placeHolderTributo = " join tributi t on sv.id_tributo = t.id join tipi_tributo tt on t.id_tipo_tributo = tt.id AND tt.cod_tributo = ? ";
+		}
+		
+		if(filtro.getCodUo() != null) {
+			addSV = true;
+			placeHolderUo = " join versamenti v on sv.id_versamento = v.id join uo u on v.id_uo = u.id AND u.cod_uo = ? ";
+		}
+		
+		String sql = "select psp.ragione_sociale, count(p.id) as totali"
+				+ " from pagamenti p left join rpt r on p.id_rpt = r.id join canali on canali.id = r.id_canale"
+				+ " join psp on psp.id = canali.id_psp "
+				+ (addSV ? " left join singoli_versamenti sv on p.id_singolo_versamento = sv.id " : " ")
+				+ placeHolderTributo + placeHolderUo
+				+ " where date_trunc(?, p.data_pagamento) = date_trunc(?, ?::timestamp)";
+		
+		if(filtro.getCodDominio() != null) {
+			sql += " AND p.cod_dominio = ? ";
+		}
+		
+		sql += " group by psp.ragione_sociale order by totali desc";
+		
+		return sql;
+	}
+	
+	@Override
+	public Object[] getStatistichePagamentiAndamentoTemporaleValues(TipoIntervallo tipoIntervallo, Date data, int limit,
+			PagamentiFilter filtro) {
+		Calendar calendar = Calendar.getInstance(); // this would default to now
+		calendar.setTime(data);
+		String date_trunc = "";
+		int realLimit = limit - 1;
+		switch (tipoIntervallo) {
+		case MENSILE:
+			date_trunc = "month";
+			calendar.add(Calendar.MONTH, -realLimit);
+			break;
+		case GIORNALIERO:
+			date_trunc = "day";
+			calendar.add(Calendar.DATE, -realLimit);
+			break;
+		case ORARIO:
+			date_trunc = "hour";
+			calendar.add(Calendar.HOUR, -realLimit);
+			break;
+		}	
+		
+		Date start = calendar.getTime();
+		
+		List<Object> valori = new ArrayList<Object>();
+		if(filtro.getCodPsp() != null) valori.add(filtro.getCodPsp());
+		if(filtro.getCodTributo() != null) valori.add(filtro.getCodTributo());
+		if(filtro.getCodUo() != null) valori.add(filtro.getCodUo());
+		
+		valori.add(start);
+		valori.add(data);
+		valori.add("1 " + date_trunc);
+		valori.add(date_trunc);
+		valori.add(date_trunc);
+		
+		if(filtro.getCodDominio() != null) valori.add(filtro.getCodDominio());
+		valori.add(limit);
+		
+		return valori.toArray(new Object[]{});
+	}
+	
+	@Override
+	public String getStatistichePagamentiAndamentoTemporaleQuery(TipoIntervallo tipoIntervallo, Date data, int limit,
+			PagamentiFilter filtro) {
+		String placeHolderTributo = " ";
+		String placeHolderUo = " ";
+		String placeHolderPsp = " ";
+		String placeHolderDominio = " ";
+		String placeHolderDate = " right join (SELECT data FROM generate_series(?::timestamp, ?::timestamp, ?::interval) as data) elencodate on date_trunc(?, p.data_pagamento) = date_trunc(?, elencodate.data) ";
+		boolean addSV = false;
+		
+		if(filtro.getCodTributo() != null) {
+			addSV = true;
+			placeHolderTributo = " join tributi t on sv.id_tributo = t.id join tipi_tributo tt on t.id_tipo_tributo = tt.id and tt.cod_tributo = ? ";
+		}
+		
+		if(filtro.getCodUo() != null) {
+			addSV = true;
+			placeHolderUo = " join versamenti v on sv.id_versamento = v.id join uo u on v.id_uo = u.id and u.cod_uo = ? ";
+		}
+
+		if(filtro.getCodPsp() != null) {
+			placeHolderPsp = " left join rpt r on p.id_rpt = r.id join canali on canali.id = r.id_canale join psp on psp.id = canali.id_psp and psp.cod_psp = ? ";
+		}
+		
+		if(filtro.getCodDominio() != null) {
+			placeHolderDominio = " and p.cod_dominio = ? ";
+		}
+		
+		String sql = "select data, count(p.id) as totali"
+				+ " from pagamenti p "
+				+ placeHolderPsp
+				+ (addSV ? "left join singoli_versamenti sv on p.id_singolo_versamento = sv.id " : " ")
+				+ placeHolderTributo + placeHolderUo
+				+ placeHolderDate
+				+ placeHolderDominio
+				;
+		
+		sql += " group by data order by data asc limit ?";
+		
+		return sql;
+	}
 }

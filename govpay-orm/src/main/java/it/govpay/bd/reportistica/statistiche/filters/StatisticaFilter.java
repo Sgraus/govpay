@@ -16,6 +16,7 @@ public abstract class StatisticaFilter extends AbstractFilter {
 	private Date data;
 	private TipoIntervallo tipoIntervallo;
 	private Double soglia;
+	private String codDominio;
 	
 	public Date getData() {
 		return data;
@@ -34,5 +35,11 @@ public abstract class StatisticaFilter extends AbstractFilter {
 	}
 	public void setSoglia(Double soglia) {
 		this.soglia = soglia;
+	}
+	public String getCodDominio() {
+		return codDominio;
+	}
+	public void setCodDominio(String codDominio) {
+		this.codDominio = codDominio;
 	}
 }

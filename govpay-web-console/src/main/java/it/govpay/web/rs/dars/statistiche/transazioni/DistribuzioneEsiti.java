@@ -28,7 +28,7 @@ import it.govpay.model.Acl.Servizio;
 import it.govpay.web.rs.dars.base.StatisticaDarsService;
 import it.govpay.web.rs.dars.handler.IStatisticaDarsHandler;
 
-@Path("/dars/statisticheTransazioni/distribuzioneEsiti")
+@Path("/dars/statistiche/transazioniDistribuzioneEsiti")
 public class DistribuzioneEsiti extends StatisticaDarsService {
 
 	public DistribuzioneEsiti() {
@@ -39,7 +39,7 @@ public class DistribuzioneEsiti extends StatisticaDarsService {
 	
 	@Override
 	public String getNomeServizio() {
-		return "distribuzioneEsiti";
+		return "transazioniDistribuzioneEsiti";
 	}
 
 	@Override
@@ -49,7 +49,7 @@ public class DistribuzioneEsiti extends StatisticaDarsService {
 	
 	@Override
 	public String getPathServizio() {
-		return "/dars/statisticheTransazioni/" + this.getNomeServizio();
+		return "/dars/statistiche/" + this.getNomeServizio();
 	}
 	
 	@Override

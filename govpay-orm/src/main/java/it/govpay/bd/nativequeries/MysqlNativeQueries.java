@@ -2,6 +2,7 @@ package it.govpay.bd.nativequeries;
 
 import java.util.Date;
 
+import it.govpay.bd.reportistica.statistiche.filters.PagamentiFilter;
 import it.govpay.bd.reportistica.statistiche.filters.TransazioniFilter;
 import it.govpay.model.reportistica.statistiche.TipoIntervallo;
 
@@ -150,9 +151,36 @@ public class MysqlNativeQueries extends NativeQueries {
 	}
 
 	@Override
-	public Object[] getStatisticheTransazioniPerPspValues(TipoIntervallo tipoIntervallo, Date data, TransazioniFilter filtro) {
+	public Object[] getStatisticheTransazioniPerPspValues(TipoIntervallo tipoIntervallo, Date data,
+			TransazioniFilter filtro) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	@Override
+	public String getStatistichePagamentiAndamentoTemporaleQuery(TipoIntervallo tipoIntervallo, Date data, int limit,
+			PagamentiFilter filtro) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	@Override
+	public Object[] getStatistichePagamentiAndamentoTemporaleValues(TipoIntervallo tipoIntervallo, Date data, int limit,
+			PagamentiFilter filtro) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	@Override
+	public String getStatistichePagamentiPerPspQuery(TipoIntervallo tipoIntervallo, Date data, PagamentiFilter filtro) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	@Override
+	public Object[] getStatistichePagamentiPerPspValues(TipoIntervallo tipoIntervallo, Date data,
+			PagamentiFilter filtro) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

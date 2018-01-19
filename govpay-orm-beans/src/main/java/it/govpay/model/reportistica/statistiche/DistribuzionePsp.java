@@ -21,20 +21,20 @@ package it.govpay.model.reportistica.statistiche;
 
 public class DistribuzionePsp {
 	private String psp;
-	private long transazioni;
+	private long numero;
 	private double percentuale;
 
-	public DistribuzionePsp(String psp, long transazioni) {
+	public DistribuzionePsp(String psp, long numero) {
 		this.psp = psp;
-		this.transazioni = transazioni;
+		this.numero = numero;
 	}
 
 	public String getPsp() {
 		return psp;
 	}
 
-	public long getTransazioni() {
-		return transazioni;
+	public long getNumero() {
+		return numero;
 	}
 
 	public double getPercentuale() {

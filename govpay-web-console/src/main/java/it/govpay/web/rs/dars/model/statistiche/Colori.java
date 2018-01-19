@@ -24,11 +24,23 @@ public class Colori {
 			getRgbString(Colori.COLOR_ERROR),
 			getRgbString(Colori.COLOR_TOTALE)
 	};
+	
+	public static final String [] coloriAndamentoTemporale = {
+			getRgbString(Colori.COLOR_TOTALE)
+	};
 
 	public static List<String> getColoriTransazioni(){
 		List<String> lst = new ArrayList<String>();
 
 		lst.addAll(Arrays.asList(coloriTransazioni));
+
+		return lst;
+	}
+	
+	public static List<String> getColoriAndamentoTemporale(){
+		List<String> lst = new ArrayList<String>();
+
+		lst.addAll(Arrays.asList(coloriAndamentoTemporale));
 
 		return lst;
 	}

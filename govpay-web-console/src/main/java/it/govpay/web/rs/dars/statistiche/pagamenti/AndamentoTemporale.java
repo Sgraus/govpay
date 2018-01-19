@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-package it.govpay.web.rs.dars.statistiche.transazioni;
+package it.govpay.web.rs.dars.statistiche.pagamenti;
 
 import javax.ws.rs.Path;
 
@@ -28,10 +28,10 @@ import it.govpay.model.Acl.Servizio;
 import it.govpay.web.rs.dars.base.StatisticaDarsService;
 import it.govpay.web.rs.dars.handler.IStatisticaDarsHandler;
 
-@Path("/dars/statistiche/transazioniDistribuzionePsp")
-public class DistribuzionePsp extends StatisticaDarsService {
+@Path("/dars/statistiche/pagamentiAndamentoTemporale")
+public class AndamentoTemporale extends StatisticaDarsService {
 
-	public DistribuzionePsp() {
+	public AndamentoTemporale() {
 		super();
 	}
 	
@@ -39,12 +39,12 @@ public class DistribuzionePsp extends StatisticaDarsService {
 	
 	@Override
 	public String getNomeServizio() {
-		return "transazioniDistribuzionePsp";
+		return "pagamentiAndamentoTemporale";
 	}
 
 	@Override
 	public IStatisticaDarsHandler<?> getDarsHandler() {
-		return new DistribuzionePspHandler(this.log, this);
+		return new AndamentoTemporaleHandler(this.log, this);
 	}
 	
 	@Override
